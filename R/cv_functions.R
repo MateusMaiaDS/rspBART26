@@ -17,16 +17,34 @@ all_spbart_lite_interaction <- function(cv_element,
   #   stop("Use the all_bart() function instead.")
   # }
 
+  if(length(cv_element)==7){
+    kfold_bool <- TRUE
+  } else {
+    kfold_bool <- FALSE
+  }
   # To replicate the results
   set.seed(seed_)
-  train <- cv_element$train
-  test <- cv_element$test
 
-  # Getting the training elements
-  x_train <- train %>% dplyr::select(dplyr::starts_with("x"))
-  x_test <- test %>% dplyr::select(dplyr::starts_with("x"))
-  y_train <- train %>% dplyr::pull("y")
-  y_test <- test %>% dplyr::pull("y")
+  if(kfold_bool){
+
+    train <- cv_element$data_train
+    test <- cv_element$data_test
+    x_train <- cv_element$x_train
+    x_test <- cv_element$x_test
+    y_train <- cv_element$y_train
+    y_test <- cv_element$y_test
+
+  } else {
+    train <- cv_element$train
+    test <- cv_element$test
+
+    # Getting the training elements
+    x_train <- train[, colnames(train)!="y", drop = FALSE]
+    x_test <- test[, colnames(train)!="y", drop = FALSE]
+    y_train <- train %>% dplyr::pull("y")
+    y_test <- test %>% dplyr::pull("y")
+  }
+
 
   # Initialising df
   comparison_metrics <- data.frame(metric = NULL, value = NULL, model = NULL,fold = NULL)
@@ -367,7 +385,7 @@ kfold <- function(data_,
 }
 
 # spBART competitors
-competitors_comparison_ <- function(cv_object_fold_,
+competitors_comparison_ <- function(cv_element,
                                     fold_,
                                     seed_,
                                     return_models = FALSE){
@@ -382,15 +400,34 @@ competitors_comparison_ <- function(cv_object_fold_,
                                    fold = NULL)
 
 
-  # Running all the models
-  train <- cv_object_fold_$train
-  test <- cv_object_fold_$test
+  if(length(cv_element)==7){
+    kfold_bool <- TRUE
+  } else {
+    kfold_bool <- FALSE
+  }
+  # To replicate the results
+  set.seed(seed_)
 
-  # Getting the training elements
-  x_train <- train %>% dplyr::select(dplyr::starts_with("x"))
-  x_test <- test %>% dplyr::select(dplyr::starts_with("x"))
-  y_train <- train %>% dplyr::pull("y")
-  y_test <- test %>% dplyr::pull("y")
+  if(kfold_bool){
+
+    train <- cv_element$data_train
+    test <- cv_element$data_test
+    x_train <- cv_element$x_train
+    x_test <- cv_element$x_test
+    y_train <- cv_element$y_train
+    y_test <- cv_element$y_test
+
+  } else {
+    train <- cv_element$train
+    test <- cv_element$test
+
+    # Getting the training elements
+    x_train <- train[, colnames(train)!="y", drop = FALSE]
+    x_test <- test[, colnames(train)!="y", drop = FALSE]
+    y_train <- train %>% dplyr::pull("y")
+    y_test <- test %>% dplyr::pull("y")
+  }
+
   j <- fold_
 
   # Loading packages

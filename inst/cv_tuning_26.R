@@ -5,10 +5,10 @@ library(mlbench)
 library(purrr)
 library(MOTRbart)
 library(doParallel)
-source("R/sim_functions.R")
-source("R/main_function.R")
+source("/users/research/mmarques/spline_bart_lab/rspBART26/R/sim_functions_26.R")
+source("/users/research/mmarques/spline_bart_lab/rspBART26/R/main_function_26.R")
 set.seed(42)
-competitors_only <- FALSE
+competitors_only <- TRUE
 
 
 n_ <- 1000
@@ -26,7 +26,7 @@ alpha_ <- 0.5
 stump_ <- FALSE
 scale_init_ <- FALSE
 update_tau_beta_ <- TRUE
-node_min_size_ <- 25
+node_min_size_ <- 50
 n_mcmc_ <- 5000
 n_burn_ <- 3000
 pen_basis_ <- TRUE
@@ -35,8 +35,8 @@ pen_basis_ <- TRUE
 # (1): "oned_break" one dimensionnal sin(2*x) with a break
 # (2): "friedman_nointer_nonoise": four-dimensional friedmna setting with no interaction terms and no extra X noise variables
 # (3): "interaction
-# type_ <- c("friedman")
-type_ <- c("friedman_break")
+type_ <- c("friedman")
+# type_ <- c("friedman_break")
 # type_ <- "smooth.main.formula"
 # type_ <- "non.smooth.main.formula"
 # type_ <- "non.and.smooth.main.formula"
@@ -127,10 +127,10 @@ doParallel::registerDoParallel(cl)
 # Testing the simple n_tree
 result <- foreach(i = 1:n_rep_, .packages = c("dbarts","SoftBart","MOTRbart","dplyr")) %dopar%{
 
-  devtools::load_all("/users/research/mmarques/spline_bart_lab/rspBART25/")
-  source("/users/research/mmarques/spline_bart_lab/rspBART25/R/sim_functions.R")
-  source("/users/research/mmarques/spline_bart_lab/rspBART25/R/main_function.R")
-  source("/users/research/mmarques/spline_bart_lab/rspBART25/R/cv_functions.R")
+  devtools::load_all("/users/research/mmarques/spline_bart_lab/rspBART26/")
+  source("/users/research/mmarques/spline_bart_lab/rspBART26/R/sim_functions_26.R")
+  source("/users/research/mmarques/spline_bart_lab/rspBART26/R/main_function_26.R")
+  source("/users/research/mmarques/spline_bart_lab/rspBART26/R/cv_functions.R")
 
   if(isFALSE(competitors_only)){
     aux <- all_spbart_lite_interaction(cv_element = cv_[[i]],
@@ -160,10 +160,10 @@ stopCluster(cl)
 
 # Saving the plots
 if(competitors_only){
-  saveRDS(object = result,file = paste0("/users/research/mmarques/spline_bart_lab/preliminar_results/rspBART25/",type_,"/competitors_n_",n_,
+  saveRDS(object = result,file = paste0("/users/research/mmarques/spline_bart_lab/preliminar_results/rspBART26/",type_,"/competitors_n_",n_,
                                         "_sd_",sd_,".Rds"))
 } else {
-  saveRDS(object = result,file = paste0("/users/research/mmarques/spline_bart_lab/preliminar_results/rspBART25/",type_,"/v29_psBART_n_",n_,
+  saveRDS(object = result,file = paste0("/users/research/mmarques/spline_bart_lab/preliminar_results/rspBART26/",type_,"/v31_intercept_psBART_n_",n_,
                                         "_sd_",sd_,"_nIknots_",nIknots_,"_ntree_",ntree_,
                                         "_alpha_",alpha_,"_dif_",dif_order_,"_nmin_",node_min_size_,
                                         "_nmcmc_",n_mcmc_,"_nburn_",n_burn_,".Rds"))

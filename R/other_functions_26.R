@@ -137,6 +137,7 @@ new_basis_list_test <- function(pred_vars_,
   for(ii in all_main_effects_index){
 
     if(new_subet){
+      # Need to correct this one to cover the  x_test subset
       new_knots_aux <- DALSM::qknots(x = x_subset[,ii],equid.knots = TRUE,K = data$nIknots)
       new_B_aux <- DALSM::centeredBasis.gen(x = x_test_subset[,ii],knots = new_knots_aux$knots,pen.order = data$dif_order)
     } else {

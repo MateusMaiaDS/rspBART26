@@ -33,7 +33,7 @@ rspBART <- function(x_train,
                     plot_preview = FALSE,
                     all_var = FALSE,
                     scale_init = FALSE,
-                    update_tau_beta = FALSE,
+                    update_tau_beta = TRUE,
                     main_effects_pred = FALSE,
                     interaction_term =  TRUE,
                     interaction_list = NULL,
@@ -47,7 +47,7 @@ rspBART <- function(x_train,
                     a_delta = 0.5,
                     d_delta = 0.5,
                     pen_basis = TRUE,
-                    center_basis = FALSE
+                    center_basis = TRUE
 ) {
 
 
@@ -842,6 +842,10 @@ rspBART <- function(x_train,
           main_effects_train_list[[ii]][i,] <- main_effects_train_list[[ii]][i,] + update_betas_aux$y_hat_train[,ii]# + update_gamma_aux$intercept_fit
           main_effects_test_list[[ii]][i,] <- main_effects_test_list[[ii]][i,] + update_betas_aux$y_hat_test[,ii]# + update_gamma_aux$intercept_test
         }
+
+        # Here I will add the intercept component
+        main_effects_train_list[[forest[[t]]$node0$master_var]][i,] <- main_effects_train_list[[forest[[t]]$node0$master_var]][i,] + update_gamma_aux$intercept_fit
+        main_effects_test_list[[forest[[t]]$node0$master_var]][i,] <- main_effects_test_list[[forest[[t]]$node0$master_var]][i,] + update_gamma_aux$intercept_test
 
       }
 

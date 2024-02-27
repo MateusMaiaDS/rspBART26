@@ -958,6 +958,11 @@ change_stump <- function(tree,
     change_type <- "interaction"
   }
 
+  # In this line I restricing to not change master variables for nodes taht are not the an stump
+  if((length(tree)>1) & change_type=="master"){
+    change_type <- "interaction"
+  }
+
   # Recalling the vector of the interactions
   all_interactions_index_ <- (length(data$dummy_x$continuousVars)+1):length(data$basis_subindex)
 
@@ -1471,42 +1476,39 @@ update_tau_betas_j <- function(tree,
     tau_beta_vec_aux_proposal <- tau_beta_vec_aux <- numeric(NCOL(data$x_train))
   }
 
-  # Iterating over all trees
-  for(i in 1:length(forest)){
 
-    # Getting terminal nodes
-    t_nodes_names <- get_terminals(forest[[i]])
-    n_t_nodes <- length(t_nodes_names)
+  # Getting terminal nodes
+  t_nodes_names <- get_terminals(tree)
+  n_t_nodes <- length(t_nodes_names)
 
-    # Iterating over the terminal nodes
-    for(j in 1:length(t_nodes_names)){
+  # Iterating over the terminal nodes
+  for(j in 1:length(t_nodes_names)){
 
-      cu_t <- forest[[i]][[t_nodes_names[j]]]
+    cu_t <- tree[[t_nodes_names[j]]]
 
 
-      # All the information from var_ now is summarised inside the element from ht enode pred_vars
-      var_ <- cu_t$pred_vars
+    # All the information from var_ now is summarised inside the element from ht enode pred_vars
+    var_ <- cu_t$pred_vars
 
 
-      # Getting ht leaf basis
-      for(kk in 1:length(var_)){
+    # Iteratating over the tree
+    for(kk in 1:length(var_)){
 
-
-        leaf_basis_subindex <- unlist(data$basis_subindex[var_[kk]]) # Recall to the unique() function here
-        p_ <- length(leaf_basis_subindex)
-        betas_mat_ <- matrix(cu_t$betas_vec[leaf_basis_subindex],nrow = p_)
-        tau_b_shape[var_[kk]] <- tau_b_shape[var_[kk]] + p_
-        if(var_[[kk]] <= length(data$dummy_x$continuousVars)){
-          tau_b_rate[var_[kk]] <- tau_b_rate[var_[kk]] + c(crossprod(betas_mat_,crossprod(data$P,betas_mat_)))
-        } else {
-          tau_b_rate[var_[kk]] <- tau_b_rate[var_[kk]] + c(crossprod(betas_mat_,crossprod(data$P_interaction,betas_mat_)))
-        }
+      leaf_basis_subindex <- unlist(data$basis_subindex[var_[kk]]) # Recall to the unique() function here
+      p_ <- length(leaf_basis_subindex)
+      betas_mat_ <- matrix(cu_t$betas_vec[leaf_basis_subindex],nrow = p_)
+      tau_b_shape[var_[kk]] <- tau_b_shape[var_[kk]] + p_
+      if(var_[[kk]] <= length(data$dummy_x$continuousVars)){
+        tau_b_rate[var_[kk]] <- tau_b_rate[var_[kk]] + c(crossprod(betas_mat_,crossprod(data$P,betas_mat_)))
+      } else {
+        tau_b_rate[var_[kk]] <- tau_b_rate[var_[kk]] + c(crossprod(betas_mat_,crossprod(data$P_interaction,betas_mat_)))
       }
-
     }
 
-
   }
+
+
+
 
   if(data$interaction_term){
 
@@ -1555,27 +1557,7 @@ update_tau_betas_j <- function(tree,
 
 
       stop("This approach is not used anymore")
-      for(j in 1:(NCOL(data$x_train)) ){
 
-
-        if(length(d_tau_beta)>1){
-          tau_beta_vec_aux_proposal <-rgamma(n = 1,
-                                             shape = 0.5*tau_b_shape[j] + 0.5*data$nu,
-                                             rate = 0.5*data$tau*tau_b_rate[j] + 0.5*data$nu*data$robust_delta[j])
-        } else {
-          tau_beta_vec_aux_proposal <- rgamma(n = 1,
-                                              shape = 0.5*tau_b_shape[j] + 0.5*data$nu,
-                                              rate = 0.5*data$tau*tau_b_rate[j] + 0.5*data$nu*data$robust_delta[j])
-
-          # Just checking any error with tau_beta sampler
-          if(tau_beta_vec_aux_proposal > 1000){
-            tau_beta_vec_aux_proposal <- 1000
-            warning("Warning: modified value for tau_beta to avoid numerical issues")
-          }
-        }
-
-        tau_beta_vec_aux[j] <- tau_beta_vec_aux_proposal
-      }
     }
 
 

@@ -29,7 +29,7 @@ bspline <- function(x, xl, xr, ndx, bdeg){
 
 # Now create a function which takes B
 # and returns the parameters of a gamma distribution
-return_gamma <- function(B, d = 0) {
+return_gamma <- function(B, d = 0, calculate_range = FALSE) {
 
   diff2 <- function(x, differences = 0) {
     if (differences == 0) {
@@ -123,7 +123,7 @@ return_gamma <- function(B, d = 0) {
 # This function takes B and returns the parameters such as that I have a gamma distribution
 #around the min. value for tau_beta
 # and returns the parameters of a gamma distribution
-return_min_tau_gamma <- function(B, d = 0) {
+return_min_tau_gamma <- function(B, d = 0, calculate_range = FALSE) {
 
   diff2 <- function(x, differences = 0) {
     if (differences == 0) {
@@ -167,27 +167,30 @@ return_min_tau_gamma <- function(B, d = 0) {
 
   # Finally use use min_tau_beta and max_tau_beta as 95% confidence
   # limits to obtain the parameters of a gamma distribution
-  min_opt3 <- function(par) {
-    shape <- par[1]
-    rate <- par[2]
-    alpha <- 0.95
-    ucl <- qgamma(alpha + (1 - alpha)/2, shape = shape, rate = rate)
-    lcl <- qgamma((1 - alpha)/2, shape = shape, rate = rate)
-    return((ucl - min_tau_beta)^2 + (lcl - min_tau_beta)^2)
+  if(calculate_range){
+    min_opt3 <- function(par) {
+      shape <- par[1]
+      rate <- par[2]
+      alpha <- 0.95
+      ucl <- qgamma(alpha + (1 - alpha)/2, shape = shape, rate = rate)
+      lcl <- qgamma((1 - alpha)/2, shape = shape, rate = rate)
+      return((ucl - min_tau_beta)^2 + (lcl - min_tau_beta)^2)
+    }
+    # min_opt3(runif(2))
+
+    # Couldn't find a way of running B-FGS-B on this one
+    # without it failing so gives some warnings
+    sh_ra <- optim(par = c(1, 1),
+                   fn = min_opt3)
+
+
+    # This model gonna retunr actually the minimum value for \tau_beta
+    if(identical(sh_ra$par,c(1,1))){
+      return(NULL)
+    }
   }
-  # min_opt3(runif(2))
 
-  # Couldn't find a way of running B-FGS-B on this one
-  # without it failing so gives some warnings
-  sh_ra <- optim(par = c(1, 1),
-                 fn = min_opt3)
-
-  # This model gonna retunr actually the minimum value for \tau_beta
-  if(identical(sh_ra$par,c(1,1))){
-    return(NULL)
-  }
-
-  return(list(gamma_parameters = sh_ra$par,
+  return(list(gamma_parameters = c(1,1),
               min_tau_beta = min_tau_beta))
 }
 

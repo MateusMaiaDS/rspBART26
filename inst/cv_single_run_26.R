@@ -5,9 +5,10 @@ library(mlbench)
 library(purrr)
 library(MOTRbart)
 library(doParallel)
-source("R/sim_functions.R")
-source("R/main_function.R")
-devtools::load_all()
+library(tidyverse)
+source("/users/research/mmarques/spline_bart_lab/rspBART26/R/sim_functions_26.R")
+source("/users/research/mmarques/spline_bart_lab/rspBART26/R/main_function_26.R")
+devtools::load_all("/users/research/mmarques/spline_bart_lab/rspBART26/")
 
 # Simulation arguments
 set.seed(42)
@@ -15,18 +16,17 @@ n_ <- 250
 sd_ <- 1
 n_rep_ <- 10
 
-
 # Selecting a simulated scenarion
 # (1): "oned_break" one dimensionnal sin(2*x) with a break
 # (2): "friedman_nointer_nonoise": four-dimensional friedmna setting with no interaction terms and no extra X noise variables
 # (3): "interaction
-type_ <- c("friedman_break")
+# type_ <- c("friedman_break")
 # type_ <- c("friedman")
 # type_ <- "smooth.main.formula"
 # type_ <- "non.smooth.main.formula"
 # type_ <- "non.and.smooth.main.formula"
 # type_ <- 'mlbench.d1.break'
-
+type_ <- "airquality"
 # ================
 # Printing message
 # ================
@@ -93,6 +93,25 @@ for( i in 1:n_rep_){
     train <- mlbench.d1.break(n = n_,sd = sd_)  |> as.data.frame()
     test <- mlbench.d1.break(n = n_,sd = sd_) |> as.data.frame()
   }
+
+  if(type_ == "airquality"){
+    # Setting the data
+    airquality <- read_csv("/users/research/mmarques/spline_bart_lab/rspBART26/inst/airquality/airquality.csv")
+    # Removing the NA columns
+    airquality <- airquality[complete.cases(airquality),]
+    # Transforming the data so it is aligned with the Bayesian MARS paper
+    data_ <- airquality %>% dplyr::select(Ozone,Solar.R,Wind,Temp) %>% dplyr::mutate(Ozone = (Ozone)^(1/3)) %>% dplyr::rename(y = Ozone)
+    train <- data_
+
+    # Creating a fine grid for the test
+    rad_grid <- seq(min(data_$Solar.R)*0.9,max(data_$Solar.R)*0.9, length.out = 300)
+    temp_grid <- seq(min(data_$Temp)*0.9, max(data_$Temp)*0.9, length.out = 300)
+    wind_grid <- seq(min(data_$Wind)*0.9, max(data_$Wind)*0.9, length.out = 300)
+    y_test_random <- rnorm(n = 300)
+    test <- data.frame(y_test_random,rad_grid,wind_grid,temp_grid)
+    colnames(test) <- colnames(train)
+  }
+
   cv_[[i]]$train <- train
   cv_[[i]]$test <- test
 }
@@ -107,20 +126,21 @@ sim_train <- selected_test
 sim_test <- selected_test
 # Defining the default parameters that are going to be used in the model, in this case I putting all
 #of them as the same from function arguments to make it easier to save it.
-x_train <- selected_train %>% dplyr::select(dplyr::starts_with("x"))
-x_test <- selected_test %>% dplyr::select(dplyr::starts_with("x"))
+x_train <- selected_train[,colnames(sim_train)!="y"]
+x_test <- selected_test[,colnames(sim_train)!="y"]
 y_train <- selected_train$y
 y_test <- selected_test$y
-n_tree <- 10
-node_min_size <- 25
-n_mcmc <- 5000
-n_burn <- 3000
+n_tree <- 5
+n_mcmc <- 10000
+n_burn <- 5000
 alpha <- 0.5
 beta <- 2
 df <- 3
 sigquant <- 0.9
 kappa <- 2
 nIknots <- 20
+node_min_size <- 25
+
 dif_order <- 2
 tau <- 1
 scale_bool <- TRUE
@@ -157,6 +177,8 @@ print(paste0("N: ",n_," SD: ", sd_, " nIknots: ", nIknots,
              dif_order, "_type_", type_, "_nmcmc_", n_mcmc, "_nburn_",n_burn,
              "\n _df_", df, "_a_delta_",a_delta, "_d_delta_", d_delta ))
 
+print(paste0("Node Min size: ", node_min_size))
+
 rsp_mod <- rspBART(x_train = x_train,
                    y_train = y_train,
                    x_test = x_test,
@@ -188,7 +210,7 @@ rsp_mod <- rspBART(x_train = x_train,
 
 
 
-saveRDS(object = rsp_mod,file = paste0("/users/research/mmarques/spline_bart_lab/preliminar_results/rspBART25/",type_,"/single_run/v31_single_run_rep_",
+saveRDS(object = rsp_mod,file = paste0("/users/research/mmarques/spline_bart_lab/preliminar_results/rspBART26/",type_,"/single_run/v31_grid_single_run_rep_",
                                        selected_rep_,"_n_",n_,
                                       "_sd_",sd_,"_nIknots_",nIknots,"_ntree_",n_tree,"_nodesize_",node_min_size,
                                       "_dif_",dif_order,"_scale_",scale_bool,"_sc_basis_",scale_basis_function,
