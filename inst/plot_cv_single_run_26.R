@@ -16,7 +16,7 @@ n_burn <- rsp_mod$mcmc$n_mcmc
 # n_burn <- 5000
 
 n_tree <- rsp_mod$prior$n_tree
-n_burn_plot <-3000
+n_burn_plot <-8000
 par(mfrow=c(1,1))
 plot(rsp_mod$all_tau, type = 'l', main = expression(tau), ylab = expression(tau))
 # plot(rsp_mod$all_tau[n_burn_plot:rsp_mod$mcmc$n_mcmc]^(-1/2), type = 'l', main = expression(tau), ylab = expression(tau))
@@ -25,12 +25,12 @@ par(mfrow = c(2,floor(NCOL(x_train)/2)))
 for(jj in 1:(NCOL(x_train)+1)){
 
   if(jj <= NCOL(x_train)){
-    plot(x_train[,jj],colMeans(main_effects_train_list_norm[[jj]][n_burn_plot:n_mcmc,, drop = FALSE]),main = paste0('X',jj),
+    plot(x_train[,jj],colMeans(main_effects_train_list_norm[[jj]][n_burn_plot:n_mcmc,, drop = FALSE]) ,main = paste0('X',jj),
          ylab = paste0('G(X',jj,')'),pch=20,xlab = paste0('x.',jj), col = alpha("black",1.0))
   }    else if(jj == NCOL(x_train)+1 ) {
     par(mfrow=c(1,1))
-    scatterplot3d::scatterplot3d(x_train[,1], x_train[,2],
-                                 colMeans(main_effects_train_list_norm[[2]][n_burn_plot:n_mcmc,,drop = FALSE])  + colMeans(main_effects_train_list_norm[[1]][n_burn_plot:n_mcmc,,drop = FALSE]) + (colMeans(main_effects_train_list_norm[[jj]][n_burn_plot:n_mcmc,,drop = FALSE])),
+    scatterplot3d::scatterplot3d(x_train[,2], x_train[,3],
+                                 colMeans(main_effects_train_list_norm[[2]][n_burn_plot:n_mcmc,,drop = FALSE])  + colMeans(main_effects_train_list_norm[[3]][n_burn_plot:n_mcmc,,drop = FALSE]) + (colMeans(main_effects_train_list_norm[[6]][n_burn_plot:n_mcmc,,drop = FALSE])),
                                  xlab = "X.1", ylab = "X.2", zlab = "f(x.1) + f (x.2) + f(x.1,x.2)", pch = 19)
     # scatterplot3d::scatterplot3d(x_train[,1], x_train[,2],
                                 # (colMeans(main_effects_train_list_norm[[jj]][n_burn_plot:n_mcmc,,drop = FALSE])),zlim = c(-1,1),

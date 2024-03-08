@@ -13,7 +13,7 @@ source("/users/research/mmarques/spline_bart_lab/rspBART26/R/sim_functions_26.R"
 source("/users/research/mmarques/spline_bart_lab/rspBART26/R/main_function_26.R")
 
 # Setting the seed
-seed_ <- 42
+seed_ <- 46
 set.seed(seed_)
 competitors_only <- FALSE
 

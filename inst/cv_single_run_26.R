@@ -130,7 +130,7 @@ x_train <- selected_train[,colnames(sim_train)!="y"]
 x_test <- selected_test[,colnames(sim_train)!="y"]
 y_train <- selected_train$y
 y_test <- selected_test$y
-n_tree <- 5
+n_tree <- 3
 n_mcmc <- 10000
 n_burn <- 5000
 alpha <- 0.5
